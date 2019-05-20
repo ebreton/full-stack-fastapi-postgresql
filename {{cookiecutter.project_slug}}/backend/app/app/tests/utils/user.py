@@ -18,26 +18,19 @@ def user_authentication_headers(server_api, email, password):
 
 
 def create_random_user():
-    email = random_lower_string()
-    password = random_lower_string()
-    user_in = UserCreate(username=email, email=email, password=password)
-    user = crud.user.create(db_session=db_session, obj_in=user_in)
-    return user
+    password = fake.password()
 
+    # generate random data for user
+    user_in = UserCreate(
+        email=fake.email(),
+        full_name=fake.name(),
+        password=password,
+        created_at=fake.date_time_this_month(),
+    )
 
-def authentication_token_from_email(email):
-    """
-    Return a valid token for the user with given email.
-
-    If the user doesn't exist it is created first.
-    """
-    password = random_lower_string()
-    user = crud.user.get_by_email(db_session, email=email)
-    if not user:
-        user_in = UserCreate(username=email, email=email, password=password)
-        user = crud.user.create(db_session=db_session, obj_in=user_in)
-    else:
-        user_in = UserUpdate(password=password)
-        user = crud.user.update(db_session, obj_in=user, db_obj=user_in)
-
-    return user_authentication_headers(get_server_api(), email, password)
+    # create and return user
+    # the generated password is added to the object for conveniency
+    # it will disappear permanently once the object will be garbage-collected
+    created = crud.user.create(db_session=db_session, user_in=user_in)
+    created.password = password
+    return created
