@@ -6,6 +6,9 @@ from app.db.session import db_session
 from app.schemas.user import UserCreate, UserUpdate
 from app.tests.utils.utils import get_server_api, random_lower_string
 
+from faker import Faker
+
+fake = Faker(config.LOCALE_FOR_TESTS)
 
 def user_authentication_headers(server_api, email, password):
     data = {"username": email, "password": password}
@@ -18,6 +21,7 @@ def user_authentication_headers(server_api, email, password):
 
 
 def create_random_user():
+    password = random_lower_string()
 
     # generate random data for user
     user_in = UserCreate(
@@ -30,7 +34,7 @@ def create_random_user():
     # create and return user
     # the generated password is added to the object for conveniency
     # it will disappear permanently once the object will be garbage-collected
-    created = crud.user.create(db_session=db_session, user_in=user_in)
+    created = crud.user.create(db_session=db_session, obj_in=user_in)
     created.password = password
     return created
 
